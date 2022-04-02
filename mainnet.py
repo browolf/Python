@@ -1,3 +1,5 @@
+#this scripts counts the create_account operations per ledger and keeps track of the number so you can stop and start the script.
+
 from urllib import request as urlrequest
 import ssl
 import json
