@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>{{ school }}  Up Monitor</title>
+        <meta http-equiv='refresh' content='10' />
+        <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Shanti" />
+        <style>
+            p {
+                font-family: Shanti;
+                font-size: 1.2em;
+                margin: 4px;
+            }
+
+            H1 {
+                font-family: Shanti;
+                font-size: 3.2em;
+                margin: 2px;
+            }
+
+            h2 {
+                font-family: Shanti;
+                margin: 10px;
+            }
+
+            td {
+                padding: 8;
+                font-family: Shanti;
+                font-size: 1.2em;
+                margin: 4px;
+                text-align: center;
+                padding-left: 10px;
+                padding-right: 10px;
+                
+            }
+        </style>
+
+    </head>
+
+    <body>
+        <center><h1>{{ school }} Up Monitor - Iter: {{ iter }}</h1></center>
+        
+        <center>
+        {{ htmlstr|safe }}
+        <center>
+    </center>
+     
+    </body>
+</html>        
