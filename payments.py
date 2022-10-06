@@ -1,3 +1,5 @@
+#this script counts the payment operations occurring on the Pi Network mainnet
+
 import sqlite3
 import os
 import socket
