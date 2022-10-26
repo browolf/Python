@@ -8,7 +8,6 @@ from urllib import request as urlrequest
 import ssl
 import time
 import json
-import _remote as remote
 import re
 import requests
 import warnings
