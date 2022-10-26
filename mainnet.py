@@ -2,7 +2,6 @@
 
 import sqlite3
 import os
-import socket
 import sys
 from urllib import request as urlrequest
 import ssl
