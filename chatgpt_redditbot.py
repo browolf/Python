@@ -6,6 +6,11 @@ import key as key
 import openai
 from authenticate import redditAuthenticate
 
+"""
+This bot fetches posts from a given subreddit and reposts them on another subreddit with a comment from chatgpt
+"""
+
+
 openai.api_key = key.api_key
 
 reddit = redditAuthenticate()
