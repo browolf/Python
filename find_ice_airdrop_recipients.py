@@ -5,6 +5,8 @@ import sys
 import os
 import time
 
+#the input file is downloaded from https://bscscan.com/address/0x7d2067399145788ed52c0820e8f53b21bf006f8d for the period 01/01/2023 t0 03/03/2024
+#remove non airdrop rows and all the columns except transaction id and date(utc) 
 input_file = "all_airdrops.csv"
 output_file = "recipients.csv"
 if os.path.exists(output_file):
