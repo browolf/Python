@@ -7,14 +7,15 @@ import time
 
 #the input file is downloaded from https://bscscan.com/address/0x7d2067399145788ed52c0820e8f53b21bf006f8d for the period 01/01/2023 t0 03/03/2024
 #remove non airdrop rows and all the columns except transaction id and date(utc) 
+
 input_file = "all_airdrops.csv"
-output_file = "recipients.csv"
+output_file = "recipientsv2.csv"
 if os.path.exists(output_file):
     os.remove(output_file)
     print(f"Deleted {output_file}")
 
 #apikey of bscscan
-apikey = "xxxx"  
+apikey = "xxx"
 #w3 provider
 w3 = Web3(Web3.HTTPProvider('https://bsc-dataseed1.binance.org/'))
 
@@ -54,7 +55,8 @@ def process_input_data(data):
 
     recipients = sections[:number_of_recipients]
     for i in range(number_of_recipients):
-        recipients[i] = recipients[i][24:].lstrip("0")
+        #recipients[i] = recipients[i][24:].lstrip("0")
+        recipients[i] = recipients[i][-40:]
     amounts = sections[number_of_recipients:]
 
     #appends 0x to the addresses to create wallet addresses
@@ -71,7 +73,8 @@ def write_to_csv(data):
             csvwriter.writerow(row)
 
 #initialise csv columns
-write_to_csv([('Recipient','Amount','Date')])
+write_to_csv([('Recipient','Amount','Date','Transaction_id')])
+
 
 #for each row in the array
 for transaction in transaction_ids:   
@@ -87,9 +90,9 @@ for transaction in transaction_ids:
     #print(paired_array)
 
     for pair in paired_array:
-        write_to_csv([(pair[0],pair[1],datestamp)])
+        write_to_csv([(pair[0],pair[1],datestamp,id)])
         print(pair)
-    
+        
     time.sleep(1)
 
 
