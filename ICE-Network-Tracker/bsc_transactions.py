@@ -95,27 +95,30 @@ async def main():
                 if transaction['tokenSymbol'] == 'ICE'
             ] 
             
+            if ice_transactions:
+                message = f"New Token Transfers Found for {label} ({address}):\n"
+                for txn in ice_transactions:
+                    value = int(txn['value']) / 10**18  # Convert value from Wei
+                    timestamp = datetime.fromtimestamp(int(txn['timeStamp']), datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                    message += (
+                        f"\nTxn Hash: {txn['hash']}"
+                        f"\nFrom: {txn['from']}"
+                        f"\nTo: {txn['to']}"
+                        f"\nToken Name: {txn['tokenName']}"
+                        f"\nToken Symbol: {txn['tokenSymbol']}"
+                        f"\nValue: {value} {txn['tokenSymbol']}"
+                        f"\nTimestamp: {timestamp}\n"
+                    )
 
-            message = f"New Token Transfers Found for {label} ({address}):\n"
-            for txn in ice_transactions:
-                value = int(txn['value']) / 10**18  # Convert value from Wei
-                timestamp = datetime.fromtimestamp(int(txn['timeStamp']), datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-                message += (
-                    f"\nTxn Hash: {txn['hash']}"
-                    f"\nFrom: {txn['from']}"
-                    f"\nTo: {txn['to']}"
-                    f"\nToken Name: {txn['tokenName']}"
-                    f"\nToken Symbol: {txn['tokenSymbol']}"
-                    f"\nValue: {value} {txn['tokenSymbol']}"
-                    f"\nTimestamp: {timestamp}\n"
-                )
+                
+                #print(message)
+                await send_telegram_message(message)
+                _logger.log(message)
+            else:
+                _logger.log(f"no new ice transactions for {label}")    
 
-            
-            #print(message)
-            await send_telegram_message(message)
-            _logger.log(message)
         else:
-            _logger.log(f"no new transactions for {label}")
+            _logger.log(f"no new hashes for {label}")
 
         time.sleep(60)
 
