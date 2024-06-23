@@ -22,6 +22,7 @@ CHAT_ID  = '<channel id>'
 MAX_MESSAGE_LENGTH = 4096
 bot = Bot(BOT_TOKEN)
 
+
 # Addresses to monitor
 ADDRESSES = {
     '0xcF03ffFA7D25f803Ff2c4c5CEdCDCb1584C5b32C': 'rewards',
@@ -83,13 +84,22 @@ async def main():
             #filter new transactions using new_hashes
             matching_transactions = [
                 transaction for transaction in new_transactions
-                if transaction['hash'] in new_hashes and transaction['tokenSymbol'] == 'ICE'
+                if transaction['hash'] in new_hashes
             ]
 
+            append_hashes(label, new_hashes)
+            _logger.log(f"{label} - {new_hashes}")
+
+            ice_transactions = [
+                transaction for transaction in matching_transactions 
+                if transaction['tokenSymbol'] == 'ICE'
+            ] 
+            
+
             message = f"New Token Transfers Found for {label} ({address}):\n"
-            for txn in matching_transactions:
+            for txn in ice_transactions:
                 value = int(txn['value']) / 10**18  # Convert value from Wei
-                timestamp = datetime.utcfromtimestamp(int(txn['timeStamp'])).strftime('%Y-%m-%d %H:%M:%S')
+                timestamp = datetime.fromtimestamp(int(txn['timeStamp']), datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
                 message += (
                     f"\nTxn Hash: {txn['hash']}"
                     f"\nFrom: {txn['from']}"
@@ -100,7 +110,7 @@ async def main():
                     f"\nTimestamp: {timestamp}\n"
                 )
 
-            append_hashes(label, new_hashes)
+            
             #print(message)
             await send_telegram_message(message)
             _logger.log(message)
