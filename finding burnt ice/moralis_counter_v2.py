@@ -8,6 +8,7 @@ import requests
 This version saves the cursor in a text file so you can start from where it left off before. 
 But you don't get very far on 40k CUs per day. Might have to pay for a month. 
 the log file of transactions contains the date of the block as well so I can later sum the daily ice burnt
+the script gets 50 cursors at a time, you can track the CU usage on the moralis portal in nearly real time. 
 """
 
 API_KEY = "<your api_key>"
