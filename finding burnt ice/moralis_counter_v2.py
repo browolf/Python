@@ -3,15 +3,16 @@ import csv
 from moralis import evm_api
 import sys
 import requests
+import pandas as pd
 
+#8942 transfers to the first dead address
 """
 This version saves the cursor in a text file so you can start from where it left off before. 
-But you don't get very far on 40k CUs per day. Might have to pay for a month. 
+But you won't get very far on 40k CUs per day. $70 for 100Mill CU  
 the log file of transactions contains the date of the block as well so I can later sum the daily ice burnt
-the script gets 50 cursors at a time, you can track the CU usage on the moralis portal in nearly real time. 
 """
 
-API_KEY = "<your api_key>"
+API_KEY = "<your api key>"
 CONTRACT_ADDRESS = "0xc335df7c25b72eec661d5aa32a7c2b7b2a1d1874"
 
 """
@@ -25,11 +26,11 @@ def reinitalize_files():
         except PermissionError:
             print("Close the file {file}")    
     with open('burn_data.csv', mode='a', newline='') as file:
-        csv.writer(file).writerow(["Block Timestamp","Transaction Hash", "Ice Burnt"])
+        csv.writer(file).writerow(["Block Timestamp","Block","From Address","To Address", "Transaction Hash", "Ice Burnt"])
     open('cursor.log', mode='w').close()          
 
 """
-Get the latest block number
+Get the latest block from the binance chain
 """
 def get_latest_block():
     url = 'https://deep-index.moralis.io/api/v2.2/latestBlockNumber/bsc'
@@ -53,8 +54,7 @@ def get_transactions(cursor):
   params = {
     "address": "0xc335df7c25b72eec661d5aa32a7c2b7b2a1d1874", 
     "chain": "bsc",
-    "from_block": 39750680 ,
-    "to_block": to_block,
+    "from_block": 39750650,
     "limit": 100,
     "order": "ASC",
     "cursor": cursor,
@@ -64,52 +64,71 @@ def get_transactions(cursor):
     api_key=API_KEY,
     params=params,
   )
-  return result
+  return result if result else None
 
-
+"""
+Look for transactions send to addresses ending in "dead"
+"""
 def dead_transaction(tx):
-    to_address = tx['to_address'].lower()   
+    to_address = tx['to_address'].lower()      
     if to_address.endswith("dead"):
         return True    
 
+"""
+Logs the transaction data in a CSV file
+"""
 def log_transaction(tx):
     value_in_wei = int(tx["value"])
     ice_value = value_in_wei / (10 ** int(tx["token_decimals"]))  
     block_timestamp = tx['block_timestamp']
-    date_part = block_timestamp.split('T')[0]
+    #date_part = block_timestamp.split('T')[0]
+    date_part = block_timestamp
     with open('burn_data.csv', mode='a', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([date_part,tx['transaction_hash'], ice_value])       
+        writer.writerow([date_part,tx['block_number'],tx['from_address'],tx['to_address'],tx['transaction_hash'], ice_value]) 
+    #print(f"{tx['block_number']}")          
+
+"""
+Logs the current cursor in a text file
+"""
+def log_cursor(cursor):
+    with open('cursor.log', mode='w') as file:
+        file.write(cursor)
 
 
 current_block = 0
 to_block = int(get_latest_block())
 print(f"Latest Block: {to_block}")
 
-#if input(f"Reinitialize files aka start again? ").lower() == 'y':
-    #reinitalize_files()
+#Wipes the csv and log file if you want to start from scratch
+if input(f"Reinitialize files aka start again? ").lower() == 'y':
+    reinitalize_files()
 
+#reads the current cursor
 with open('cursor.log', mode='r') as file:
     cursor = file.read().strip()
 
+if not cursor:
+    cursor = ""
 
-i = 0
-while current_block < to_block and i < 50:
-    transactions = get_transactions(cursor)
-    for tx in transactions['result']:
-        if dead_transaction(tx):
-            log_transaction(tx)
-        
+page = 1 
+while True:
+    try:
 
-    current_block = int(tx['block_number'])        
-    with open('cursor.log', mode='w') as file:
-        file.write(transactions['cursor'])
-    
-    
-    #print(f"Length of this selection: {len(tx)}")
-    print(f"Current_block: {current_block}")
-    cursor = transactions['cursor']
-    i +=1
+        log_cursor(cursor)
+        transactions = get_transactions(cursor)
+        if transactions:
+            for tx in transactions['result']:
+                if dead_transaction(tx):
+                    log_transaction(tx)
+            print(f"Page {page}")
+        else:
+            sys.exit("No More Transactions")            
+
+        cursor = transactions['cursor']
+        page += 1
+    except KeyboardInterrupt:
+        sys.exit("Manually stopped")
     
 
 
