@@ -114,7 +114,7 @@ if not cursor:
 page = 1 
 while True:
     try:
-
+        #need to log the last cursor before we try to get the next one. 
         log_cursor(cursor)
         transactions = get_transactions(cursor)
         if transactions:
