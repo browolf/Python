@@ -104,20 +104,27 @@ print(f"Latest Block: {to_block}")
 if input(f"Reinitialize files aka start again? ").lower() == 'y':
     reinitalize_files()
 
-#reads the current cursor
 with open('cursor.log', mode='r') as file:
     cursor = file.read().strip()
 
 if not cursor:
     cursor = ""
 
-page = 1 
+"""
+the first cursor is always blank  but you need to get through the loop to pickup the 2nd cursor. 
+On the first run through the page is 0. 
+
+at the end of the run the last cursor is None. 
+so you want to be able to save the last not none cursor and exit the loop.
+this should mean that you can continue where it left off tomorrow. 
+I'm not 100% sure this works. 
+"""
+page = 0 
 while True:
     try:
-        #need to log the last cursor before we try to get the next one. 
-        log_cursor(cursor)
-        transactions = get_transactions(cursor)
-        if transactions:
+        if cursor or page==0:
+            log_cursor(cursor)
+            transactions = get_transactions(cursor)
             for tx in transactions['result']:
                 if dead_transaction(tx):
                     log_transaction(tx)
@@ -129,7 +136,6 @@ while True:
         page += 1
     except KeyboardInterrupt:
         sys.exit("Manually stopped")
-    
 
 
 
