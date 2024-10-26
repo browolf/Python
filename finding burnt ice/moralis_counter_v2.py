@@ -6,28 +6,32 @@ import requests
 import pandas as pd
 
 #8942 transfers to the first dead address
+
 """
 This version saves the cursor in a text file so you can start from where it left off before. 
 But you won't get very far on 40k CUs per day. $70 for 100Mill CU  
 the log file of transactions contains the date of the block as well so I can later sum the daily ice burnt
 """
 
+
 API_KEY = "<your api key>"
 CONTRACT_ADDRESS = "0xc335df7c25b72eec661d5aa32a7c2b7b2a1d1874"
+output_burnt = "burn_data.csv"
+cursor_log = "cursor.log"
 
 """
 Start from scratch, remove and recreate the log files
 """
 def reinitalize_files():
     print(f"Re-initalizing files")
-    for file in ["burn_data.csv", "cursor.log"]:
+    for file in [output_burnt, cursor_log]:
         try:
             os.remove(file) if os.path.exists(file) else None
         except PermissionError:
             print("Close the file {file}")    
-    with open('burn_data.csv', mode='a', newline='') as file:
+    with open(output_burnt, mode='a', newline='') as file:
         csv.writer(file).writerow(["Block Timestamp","Block","From Address","To Address", "Transaction Hash", "Ice Burnt"])
-    open('cursor.log', mode='w').close()          
+    open(cursor_log, mode='w').close()          
 
 """
 Get the latest block from the binance chain
@@ -49,12 +53,12 @@ def get_latest_block():
 """
 Get 100 transactions from the cursor
 """
-def get_transactions(cursor):
+def get_transactions(cursor, from_block):
   global to_block
   params = {
     "address": "0xc335df7c25b72eec661d5aa32a7c2b7b2a1d1874", 
     "chain": "bsc",
-    "from_block": 39750650,
+    "from_block": from_block,
     "limit": 100,
     "order": "ASC",
     "cursor": cursor,
@@ -66,33 +70,26 @@ def get_transactions(cursor):
   )
   return result if result else None
 
-"""
-Look for transactions send to addresses ending in "dead"
-"""
+
 def dead_transaction(tx):
     to_address = tx['to_address'].lower()      
     if to_address.endswith("dead"):
         return True    
 
-"""
-Logs the transaction data in a CSV file
-"""
 def log_transaction(tx):
     value_in_wei = int(tx["value"])
     ice_value = value_in_wei / (10 ** int(tx["token_decimals"]))  
     block_timestamp = tx['block_timestamp']
     #date_part = block_timestamp.split('T')[0]
     date_part = block_timestamp
-    with open('burn_data.csv', mode='a', newline='') as file:
+    with open(output_burnt, mode='a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([date_part,tx['block_number'],tx['from_address'],tx['to_address'],tx['transaction_hash'], ice_value]) 
     #print(f"{tx['block_number']}")          
 
-"""
-Logs the current cursor in a text file
-"""
+
 def log_cursor(cursor):
-    with open('cursor.log', mode='w') as file:
+    with open(cursor_log, mode='w') as file:
         file.write(cursor)
 
 
@@ -100,42 +97,41 @@ current_block = 0
 to_block = int(get_latest_block())
 print(f"Latest Block: {to_block}")
 
-#Wipes the csv and log file if you want to start from scratch
 if input(f"Reinitialize files aka start again? ").lower() == 'y':
     reinitalize_files()
+    from_block = 39752100
+else:
+    #get last block from csv file
+    df = pd.read_csv(output_burnt)
+    last_row = df.iloc[-1]
+    from_block = int(last_row['Block'])+1
+    del df
 
-with open('cursor.log', mode='r') as file:
-    cursor = file.read().strip()
+        
 
-if not cursor:
-    cursor = ""
+#with open(cursor_log, mode='r') as file:
+#    cursor = file.read().strip()
 
-"""
-the first cursor is always blank  but you need to get through the loop to pickup the 2nd cursor. 
-On the first run through the page is 0. 
-
-at the end of the run the last cursor is None. 
-so you want to be able to save the last not none cursor and exit the loop.
-this should mean that you can continue where it left off tomorrow. 
-I'm not 100% sure this works. 
-"""
+cursor = ""
 page = 0 
 while True:
     try:
-        if cursor or page==0:
-            log_cursor(cursor)
-            transactions = get_transactions(cursor)
+        if cursor or page == 0:
+            #log_cursor(cursor)
+            transactions = get_transactions(cursor, from_block)
             for tx in transactions['result']:
                 if dead_transaction(tx):
                     log_transaction(tx)
             print(f"Page {page}")
         else:
+            #log_cursor("")
             sys.exit("No More Transactions")            
 
         cursor = transactions['cursor']
         page += 1
     except KeyboardInterrupt:
         sys.exit("Manually stopped")
+    
 
 
 
