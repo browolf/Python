@@ -1,0 +1,26 @@
+CREATE TABLE "at" (
+	"coin_id"	TEXT,
+	"ath"	REAL,
+	"ath_date"	TEXT,
+	"atl"	REAL,
+	"atl_date"	TEXT,
+	PRIMARY KEY("coin_id")
+)
+
+CREATE TABLE "coins" (
+	"id"	TEXT,
+	"name"	TEXT,
+	"type"	TEXT,
+	PRIMARY KEY("id")
+)
+
+CREATE TABLE "ranking" (
+	"id"	INTEGER,
+	"coin_id"	TEXT,
+	"date"	TEXT,
+	"mcr"	INTEGER,
+	"market_cap"	INTEGER,
+	"current_price"	REAL,
+	"total_volume"	INTEGER,
+	PRIMARY KEY("id")
+)
