@@ -1,6 +1,9 @@
 import pandas as pd
 import os
 
+# Set pandas to display floats without scientific notation
+pd.set_option('display.float_format', '{:.0f}'.format)
+
 output_file = "daily_bridged_totals.csv"
 os.remove(output_file) if os.path.exists(output_file) else None
 
@@ -28,4 +31,4 @@ daily_totals = df.groupby(df['Date Part'].dt.date).agg(
 daily_totals.to_csv(output_file, index=False)
 
 print("New CSV file with daily totals created.")
-print(f"burnt total: {df['Value'].sum()}")
+print(f"bridged total: {df['Value'].sum()}")
