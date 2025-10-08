@@ -2,7 +2,10 @@
 Call_Logs.py
 
 This page is part of a **Streamlit multipage server** that displays recent external outgoing calls
-from a PostgreSQL database.
+from a PostgreSQL database. 
+
+Data is sent to the database using a connector in the 3cx Admin. Unfortunately the schedule is
+minimum an hour and then the data is minimum 1 hour old. 
 
 Features included in this page:
 - Shows up to 200 of the most recent external outgoing calls.
