@@ -77,4 +77,4 @@ table_data = data.rename(columns={
     "external_number": "External Number"
 })
 
-st.dataframe(table_data, use_container_width=True, hide_index=True, height=800)
+st.table(table_data)
