@@ -10,7 +10,7 @@ minimum an hour and then the data is minimum 1 hour old.
 Features included in this page:
 - Shows up to 200 of the most recent external outgoing calls.
 - Displays call start time, source number, source name, and external number.
-- Column names are user-friendly and the table index is hidden.
+- Column names are user-friendly.
 - Shows minutes until the next scheduled 3CX export (top-of-hour).
 
 **Important:** Update the DB variables with your PostgreSQL details
